@@ -75,13 +75,11 @@
     var getValues = function (that) {
         var param = {},
             filters = getHeader(that).find('select.filter-control, input.filter-control');
-        console.log('filters.length', filters.length);
         filters.each(function () {
             var paramName = $(this).attr('name'),
                 paramValue = $(this).val();
             param[paramName] = paramValue;
         });
-        console.log('param', param);
         return [param];
     }
 
@@ -89,7 +87,8 @@
         var isVisible,
             html = [],
             datepickerOptions = [],
-            filterRow = $('<tr class="filter"></tr>');
+            filterRow = $('<tr class="filter"></tr>'),
+            timeoutId = 0;
 
         $.each(that.columns, function (i, column) {
             if (!column.visible) {
@@ -122,8 +121,8 @@
         
         filterRow.insertAfter(getHeader(that).find('tr'));
         
-        if (getHeader(that).find('select.filter-select').length > 0) {
-            getHeader(that).find('select.filter-select').each(function () {
+        if (getHeader(that).find('.filter-select').length > 0) {
+            getHeader(that).find('.filter-select').each(function () {
                 var searchable = $(this).data('searchable');
                 var selectType = $(this).data('selectType');
                 switch(selectType)
@@ -160,6 +159,44 @@
                 }
             });
         }
+
+        if (that.options.sidePagination !== 'server') {
+            getHeader(that).off('keyup', 'input').on('keyup', 'input.filter-control', function (event) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(function () {
+                    that.onColumnSearch(event);
+                }, that.options.searchTimeOut);
+            });
+
+            getHeader(that).off('change', 'select').on('change', 'select.filter-select', function (event) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(function () {
+                    that.onColumnSearch(event);
+                }, that.options.searchTimeOut);
+            });
+
+            getHeader(that).off('mouseup', 'input').on('mouseup', 'input.filter-control', function (event) {
+                var $input = $(this),
+                oldValue = $input.val();
+
+                if (oldValue === "") {
+                    return;
+                }
+
+                setTimeout(function () {
+                    var newValue = $input.val();
+
+                    if (newValue === "") {
+                        clearTimeout(timeoutId);
+                        timeoutId = setTimeout(function () {
+                            that.onColumnSearch(event);
+                        }, that.options.searchTimeOut);
+                    }
+                }, 1);
+            });
+        }
+
+
 
         if (getHeader(that).find('input.filter-datepicker').length > 0) {
             getHeader(that).find('input.filter-datepicker').each(function () {
@@ -265,20 +302,29 @@
             return 'Reset filter';
         }
     });
-    $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales);
+    $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales);  
 
     $.extend($.fn.bootstrapTable.COLUMN_DEFAULTS, {
         filterType: undefined,
         filterData: undefined,
         filterSelectSearchable: false,
         filterDatepickerOptions: { dateFormat: 'dd.mm.yy' },
-        filterDisabled: false
+        filterDisabled: false,
+        filterStrictSearch: true
     });
+
+    /*
+    TODO...
+    $.extend($.fn.bootstrapTable.Constructor.EVENTS, {
+        'column-search.bs.table': 'onColumnSearch'
+    });
+    */
 
     var BootstrapTable = $.fn.bootstrapTable.Constructor,
         _init = BootstrapTable.prototype.init,
         _initToolbar = BootstrapTable.prototype.initToolbar,
         _initHeader = BootstrapTable.prototype.initHeader,
+        _initSearch = BootstrapTable.prototype.initSearch,
         _fitHeader = BootstrapTable.prototype.fitHeader,
         _refresh = BootstrapTable.prototype.refresh;
 
@@ -316,9 +362,19 @@
             return;
         }
 
+		var padding = 0;
+		
         createControls(this, this.$header);
         setValues(this);
-        this.$tableLoading.css('top', this.$tableHeader.outerHeight() + 1);       
+        this.$tableLoading.css('top', this.$tableHeader.outerHeight() + 1); 
+		
+		padding += this.$tableHeader.outerHeight();
+
+		if (this.options.showFooter) {
+			padding += this.$tableFooter.outerHeight() + 1;
+		}
+		
+        this.$tableContainer.css('padding-bottom', padding + 'px');
     };
 
     BootstrapTable.prototype.refresh = function (params) {
@@ -350,12 +406,14 @@
 
         var $btnGroup = $('<div class="columns columns-right btn-group pull-right"></div>');
 
-        var $btnFilter = $([
-                    '<button class="btn btn-default" ',
-                    sprintf('type="button" title="%s">', this.options.formatFilter()),
-                    sprintf('<i class="%s %s"></i> ', this.options.iconsPrefix, this.options.icons.filter),
-                    '</button>',
-                    '</ul>'].join('')).appendTo($btnGroup);
+        if (this.options.sidePagination === 'server') {
+            var $btnFilter = $([
+                        '<button class="btn btn-default" ',
+                        sprintf('type="button" title="%s">', this.options.formatFilter()),
+                        sprintf('<i class="%s %s"></i> ', this.options.iconsPrefix, this.options.icons.filter),
+                        '</button>',
+                        '</ul>'].join('')).appendTo($btnGroup);
+        }
 
         var $btnResetFilter = $([
                     '<button class="btn btn-default" ',
@@ -366,7 +424,9 @@
 
         $btnGroup.appendTo(this.$toolbar);
 
-        $btnFilter.off('click').on('click', $.proxy(this.refresh, this));
+        if (this.options.sidePagination === 'server') {
+            $btnFilter.off('click').on('click', $.proxy(this.refresh, this));
+        }
         $btnResetFilter.off('click').on('click', $.proxy(this.resetFilter, this));      
     };
 
@@ -394,9 +454,89 @@
         filters.each(function () {
             $(this).select2('val', '');
         });
-            
-        this.refresh();
         
+        if (this.options.sidePagination === 'server') {
+            this.refresh();
+        } else {
+            var controls = getHeader(this).find('select.filter-control, input.filter-control'),
+                table = this.$header.closest('table'),
+                search = this.$toolbar.find('.search input');
+            
+            if (controls.length > 0) {
+                this.filterColumnsPartial = {};
+                $(controls[0]).trigger(controls[0].tagName === 'INPUT' ? 'keyup' : 'change');
+            }
+
+            if (search.length > 0) {
+                that.resetSearch();
+            }
+        }        
+    };
+
+    BootstrapTable.prototype.onColumnSearch = function (event) {
+        saveValues(this);
+        var text = $.trim($(event.currentTarget).val());
+        var $field = $(event.currentTarget).closest('[data-field]').data('field');
+
+        if ($.isEmptyObject(this.filterColumnsPartial)) {
+            this.filterColumnsPartial = {};
+        }
+        if (text) {
+            this.filterColumnsPartial[$field] = text;
+        } else {
+            delete this.filterColumnsPartial[$field];
+        }
+
+        this.options.pageNumber = 1;
+        this.onSearch(event);
+        this.updatePagination();
+        // TODO...
+        //this.trigger('column-search', $field, text);
+    };
+
+    BootstrapTable.prototype.initSearch = function () {
+        _initSearch.apply(this, Array.prototype.slice.apply(arguments));
+
+        if (!this.options.sidePagination === 'server') {
+            return;
+        }
+
+        var that = this;
+        var fp = $.isEmptyObject(this.filterColumnsPartial) ? null : this.filterColumnsPartial;
+
+        //Check partial column filter
+        this.data = fp ? $.grep(this.data, function (item, i) {
+            for (var key in fp) {
+                var thisColumn = that.columns[$.fn.bootstrapTable.utils.getFieldIndex(that.columns, key)];
+                var fval = fp[key].toLowerCase();
+                var value = item[key];
+
+                // Fix #142: search use formated data
+                if (thisColumn && thisColumn.searchFormatter) {
+                    value = $.fn.bootstrapTable.utils.calculateObjectValue(that.header,
+                    that.header.formatters[$.inArray(key, that.header.fields)],
+                    [value, item, i], value);
+                }
+
+                // TODO client search when filterType = *_range
+
+                if (thisColumn.filterStrictSearch) {
+                    if (!($.inArray(key, that.header.fields) !== -1 &&
+                        (typeof value === 'string' || typeof value === 'number') &&
+                        value.toString().toLowerCase() === fval.toString().toLowerCase())) {
+                        return false;
+                    }
+                }
+                else {
+                    if (!($.inArray(key, that.header.fields) !== -1 &&
+                        (typeof value === 'string' || typeof value === 'number') &&
+                        (value + '').toLowerCase().indexOf(fval) !== -1)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }) : this.data;
     };
 
 }(jQuery);
