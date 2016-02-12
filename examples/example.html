@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Bootstrap-table filter example</title>
+	<link href="../assets/css/bootstrap.css" rel="stylesheet" type="text/css">
+	<link href="../assets/css/bootstrap-override.css" rel="stylesheet" type="text/css">
+	<link href="../assets/css/bootstrap-table.css" rel="stylesheet" type="text/css">
+	<link href="../assets/css/select2.css" rel="stylesheet" type="text/css">
+	<link href="../assets/css/jquery-ui-1.10.3.css" rel="stylesheet" type="text/css">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body>
+	
+	<div class="container">
+
+		<div class="page-header">
+			<h1>Bootstrap-table filter example</h1>
+			<p class="lead">Basic bootstrap-table filter controls initialize</p>
+		</div>
+	
+		<h3>Simple controls</h3>
+		<p>Basic bootstrap-table filter controls initialize</p>
+	
+		<table id="itemsTable" class="table"
+			data-toggle="table"
+			data-url="data.json"
+			data-height="320"
+			data-filter="true"
+			data-icons-prefix="fa">
+			<thead>
+				<tr>
+					<th data-field="id" data-align="center" data-sortable="true">Item ID</th>
+                    <th data-field="name" data-align="center" data-sortable="true" data-filter-type="input">Item Name</th>
+                    <th data-field="price" data-align="" data-sortable="true" data-filter-type="select" data-filter-data="var:itemPrices">Item Price</th>
+                    <th data-field="date" data-align="" data-sortable="true" data-filter-type="datepicker">Item Date</th>
+				</tr>
+			</thead>
+		</table>
+		
+		<h3>Range controls</h3>
+		<p>Bootstrap-table filter controls initialize with range</p>
+	
+		<table id="itemsTable2" class="table"
+			data-toggle="table"
+			data-url="data.json"
+			data-height="320"
+			data-filter="true"
+			data-icons-prefix="fa">
+			<thead>
+				<tr>
+					<th data-field="id" data-align="center" data-sortable="true">Item ID</th>
+                    <th data-field="name" data-align="center" data-sortable="true" data-filter-type="input">Item Name</th>
+                    <th data-field="price" data-align="" data-sortable="true" data-filter-type="select" data-filter-data="var:itemPrices">Item Price</th>
+                    <th data-field="date" data-align="" data-sortable="true" data-filter-type="datepicker_range">Item Date</th>
+				</tr>
+			</thead>
+		</table>
+		
+	</div>
+	
+	<script src="../assets/js/jquery-1.11.3.js"></script>
+	<script src="../assets/js/bootstrap.js"></script>
+	<script src="../assets/js/bootstrap-table.js"></script>
+	<script src="../assets/js/bootstrap-table-en-US.js"></script>
+	<script src="../assets/js/select2.js"></script>
+	<script src="../assets/js/jquery-ui-1.10.3.min.js"></script>
+	<script src="../src/bootstrap-table-filter.js"></script>
+	<script type="text/javascript">
+        var itemPrices = [{ id: 1, text: '$1' }, { id: 2, text: '$2' }];			
+	</script>
+</body>
+</html>
