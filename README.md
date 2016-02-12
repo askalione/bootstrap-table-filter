@@ -1,67 +1,52 @@
-Bootstrap table filters
+Bootstrap-table filter
 =======================
 
-This is an extension for [Bootstrap table](http://wenzhixin.net.cn/p/bootstrap-table/docs/extensions.html) module which aim is to provide data tables with filtering feature.
+This is an extension for [Bootstrap table](http://issues.wenzhixin.net.cn/bootstrap-table/) jquery plugin, based on another extension [Table Filter Control](https://github.com/wenzhixin/bootstrap-table/tree/master/src/extensions/filter-control), which give powerfull filter controls for columns.
 
 Usage
 -----
-### Simple example
-First of all, you need to include Bootstrap and this extension:
+### Step 1
+Include jQuery, Bootstrap, Bootstrap-table and then Bootstrap-table filter
 ```
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link rel="../src/stylesheet" href="bootstrap-table-filter.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.0/bootstrap-table.min.css">
+	
+	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.0/bootstrap-table.min.js"></script>
+	<script src="../dist/bootstrap-table-filter.min.js"></script>
+```
 
-    <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="../src/bootstrap-table-filter.js"></script>
+### Step 2
+Then u can enable filter via html
+```
+    <table id="itemsTable" class="table"
+		   data-detail-view="true"
+		   data-url="../json/data.json"
+		   data-method="post"
+		   data-detail-formatter="detailFormatter"
+		   data-height="500"
+		   data-filter="true">
+		<thead>
+			<tr>
+				<th data-field="ItemId" data-sortable="true" data-align="center">ItemId</th>
+				<th data-field="ItemName" data-sortable="true" data-align="left" data-filter-type="input">ItemName</th>
+				<th data-field="ItemStatus" data-sortable="true" data-align="left" data-width="320" data-filter-type="select" data-filter-select-data="var:ItemStatuses">ItemStatus</th>
+			</tr>
+		</thead>
+	</table>
 ```
 
-Then you can create placeholder element and initialize it with javascript as a filter:
+or u can enable filter via javascript
 ```
-<div id="filter-bar"></div>
-<script type="javascript">
-    $(function() {
-        $('#filter-bar').bootstrapTableFilter({
-            filters:[
-                {
-                    field: 'id',    // field identifier
-                    label: 'ID',    // filter label
-                    type: 'range'   // filter type
-                },
-                {
-                    field: 'label',
-                    label: 'Label',
-                    type: 'search',
-                    enabled: true   // filter is visible by default
-                },
-                {
-                    field: 'role',
-                    label: 'Role',
-                    type: 'select',
-                    values: [
-                        {id: 'ROLE_ANONYMOUS', label: 'Anonymous'},
-                        {id: 'ROLE_USER', label: 'User'},
-                        {id: 'ROLE_ADMIN', label: 'Admin'}
-                    ],
-                },
-                {
-                    field: 'username',
-                    label: 'User Name',
-                    type: 'search'
-                },
-                {
-                    field: 'city',
-                    label: 'City',
-                    type: 'ajaxSelect',
-                    source: 'http://example.com/get-cities.php'
-                }
-            ],
-            onSubmit: function() {
-                var data = $('#filter-bar').bootstrapTableFilter('getData');
-                console.log(data);
-            }
-        });
-    });
-</script>
+	<script type="javascript">
+		var $itemsTable = $('#itemsTable');
+		
+		$(document).ready(function () {
+			$itemsTable.bootstrapTable({
+				
+			});
+		});
+	</script>
 ```
