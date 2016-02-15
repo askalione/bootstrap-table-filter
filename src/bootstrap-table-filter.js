@@ -1,6 +1,6 @@
 ﻿/**
  * @author: Alexey Drapash
- * @webSite: http://askalione.github.io/bootstrap-table-filter/
+ * @webSite: https://github.com/askalione/bootstrap-table-filter
  * @version: v1.0.0
  */
 
@@ -99,6 +99,9 @@
                 html[column.field] = '<th></th>';
             } else {
                 var nameControl = column.filterType.toLowerCase();
+				if (that.options.sidePagination !== 'server') {
+					nameControl = nameControl.replace('_range','');
+				}
                 if (column.searchable && that.options.filterTemplates[nameControl]) {
                     html[column.field] = '<th>' + that.options.filterTemplates[nameControl](that, column) + '</th>';
                     if (nameControl == 'datepicker') {
@@ -211,6 +214,9 @@
     $.extend($.fn.bootstrapTable.defaults, {
         filter: false,       
         filterValues: [],
+		onColumnSearch: function (field, text) {
+            return false;
+        },
         filterTemplates: {
             input: function (that, column) {
                 return sprintf('<input type="text" class="form-control filter-control" name="%s_filter" style="width: 100%;" data-field="%s" %s>', column.field, column.field, column.filterDisabled ? 'disabled="disabled"' : '');
@@ -279,6 +285,10 @@
             }
         }
     });
+	
+	$.extend($.fn.bootstrapTable.Constructor.EVENTS, {
+        'column-search.bs.table': 'onColumnSearch'
+    });
 
     $.extend($.fn.bootstrapTable.defaults.icons, {
         filter: 'fa-filter icon-filter',
@@ -312,13 +322,6 @@
         filterDisabled: false,
         filterStrictSearch: true
     });
-
-    /*
-    TODO...
-    $.extend($.fn.bootstrapTable.Constructor.EVENTS, {
-        'column-search.bs.table': 'onColumnSearch'
-    });
-    */
 
     var BootstrapTable = $.fn.bootstrapTable.Constructor,
         _init = BootstrapTable.prototype.init,
@@ -405,9 +408,10 @@
         }
 
         var $btnGroup = $('<div class="columns columns-right btn-group pull-right"></div>');
-
+		var $btnFilter, $btnResetFilter;
+		
         if (this.options.sidePagination === 'server') {
-            var $btnFilter = $([
+			$btnFilter= $([
                         '<button class="btn btn-default" ',
                         sprintf('type="button" title="%s">', this.options.formatFilter()),
                         sprintf('<i class="%s %s"></i> ', this.options.iconsPrefix, this.options.icons.filter),
@@ -415,7 +419,7 @@
                         '</ul>'].join('')).appendTo($btnGroup);
         }
 
-        var $btnResetFilter = $([
+        $btnResetFilter = $([
                     '<button class="btn btn-default" ',
                     sprintf('type="button" title="%s">', this.options.formatResetFilter()),
                     sprintf('<i class="%s %s"></i> ', this.options.iconsPrefix, this.options.icons.resetFilter),
@@ -477,8 +481,8 @@
         saveValues(this);
         var text = $.trim($(event.currentTarget).val());
         var $field = $(event.currentTarget).closest('[data-field]').data('field');
-
-        if ($.isEmptyObject(this.filterColumnsPartial)) {
+		
+		if ($.isEmptyObject(this.filterColumnsPartial)) {
             this.filterColumnsPartial = {};
         }
         if (text) {
@@ -490,8 +494,8 @@
         this.options.pageNumber = 1;
         this.onSearch(event);
         this.updatePagination();
-        // TODO...
-        //this.trigger('column-search', $field, text);
+		
+        this.trigger('column-search', $field, text);
     };
 
     BootstrapTable.prototype.initSearch = function () {
@@ -504,7 +508,6 @@
         var that = this;
         var fp = $.isEmptyObject(this.filterColumnsPartial) ? null : this.filterColumnsPartial;
 
-        //Check partial column filter
         this.data = fp ? $.grep(this.data, function (item, i) {
             for (var key in fp) {
                 var thisColumn = that.columns[$.fn.bootstrapTable.utils.getFieldIndex(that.columns, key)];
@@ -517,8 +520,6 @@
                     that.header.formatters[$.inArray(key, that.header.fields)],
                     [value, item, i], value);
                 }
-
-                // TODO client search when filterType = *_range
 
                 if (thisColumn.filterStrictSearch) {
                     if (!($.inArray(key, that.header.fields) !== -1 &&
