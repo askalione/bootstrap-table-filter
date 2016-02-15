@@ -11,11 +11,11 @@
 </head>
 <body>
 	
-	<div class="container">
+	<div class="container mb50">
 
 		<div class="page-header">
-			<h1>Bootstrap-table filter example</h1>
-			<p class="lead">Basic bootstrap-table filter controls initialize</p>
+			<h1 class="text-primary">Bootstrap-table filter example</h1>
+			<p class="lead">Basic bootstrap-table filter controls initialize / <a href="https://github.com/askalione/bootstrap-table-filter">README</a></p>			
 		</div>
 	
 		<h3>Simple controls</h3>
@@ -39,19 +39,26 @@
 		
 		<h3>Range controls</h3>
 		<p>Bootstrap-table filter controls initialize with range</p>
+		<div class="alert alert-warning">
+			<strong>Remember!</strong> All range controls (<code>input_range</code>, <code>select_range</code> and <code>datepicker_range</code>) only for <strong><u>server side</u></strong>.
+		</div>
 	
 		<table id="itemsTable2" class="table"
 			data-toggle="table"
 			data-url="data.json"
-			data-height="320"
+			data-height="420"
 			data-filter="true"
-			data-icons-prefix="fa">
+			data-icons-prefix="fa"
+			data-pagination="true"
+		    data-side-pagination="server"
+		    data-page-number="1"
+		    data-page-size="15">
 			<thead>
 				<tr>
 					<th data-field="id" data-align="center" data-sortable="true">Item ID</th>
                     <th data-field="name" data-align="center" data-sortable="true" data-filter-type="input">Item Name</th>
                     <th data-field="price" data-align="" data-sortable="true" data-filter-type="select" data-filter-data="var:itemPrices">Item Price</th>
-                    <th data-field="date" data-align="" data-sortable="true" data-filter-type="datepicker_range">Item Date</th>
+                    <th data-field="date" data-align="" data-class="col-sm-3" data-sortable="true" data-filter-type="datepicker_range">Item Date</th>
 				</tr>
 			</thead>
 		</table>
@@ -66,7 +73,11 @@
 	<script src="../assets/js/jquery-ui-1.10.3.min.js"></script>
 	<script src="../src/bootstrap-table-filter.js"></script>
 	<script type="text/javascript">
-        var itemPrices = [{ id: 1, text: '$1' }, { id: 2, text: '$2' }];			
+        var itemPrices = [{ id: 1, text: '$1' }, { id: 2, text: '$2' }];
+
+		$('#itemsTable').on('column-search.bs.table', function () {
+				console.log('hello event');
+        });
 	</script>
 </body>
 </html>
