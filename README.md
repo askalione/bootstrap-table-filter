@@ -162,6 +162,10 @@ By default ['en-US'] locale
 * `formatFilter`: 'Start filter'
 * `formatResetFilter`: 'Reset filter'
 
-TODO
+Events
 -----
-* Search on client-side when filterType = '*_range'
+
+### onColumnSearch
+
+* event name: `column-search.bs.table`
+* description: Fired when we are searching into the column data
