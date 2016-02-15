@@ -103,7 +103,7 @@
 					nameControl = nameControl.replace('_range','');
 				}
                 if (column.searchable && that.options.filterTemplates[nameControl]) {
-                    html[column.field] = '<th>' + that.options.filterTemplates[nameControl](that, column) + '</th>';
+                    html[column.field] = '<th><div class="filter-inner">' + that.options.filterTemplates[nameControl](that, column) + '</div></th>';
                     if (nameControl == 'datepicker') {
                         datepickerOptions[column.field] = column.filterDatepickerOptions;
                     }
