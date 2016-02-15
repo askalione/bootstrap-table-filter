@@ -1,0 +1,26 @@
+.form-control {
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    box-shadow: none;
+    font-size: 13px;
+    height: auto;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+}
+.mb5 {
+	margin-bottom: 5px;
+}
+.mb50 {
+	margin-bottom: 50px;
+}
+.gthb-buttons {
+	text-align: center;
+	width: 100%;
+}
+.footer{
+	margin-top: 50px;
+}
