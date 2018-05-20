@@ -46,6 +46,9 @@
         },
         formatResetFilter: function () {
             return 'Reset filter';
+        },
+		formatFilterSelectLabel: function () {
+            return 'All';
         }
     };
 

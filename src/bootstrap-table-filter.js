@@ -1,7 +1,7 @@
 ﻿/**
  * @author: Alexey Drapash
  * @webSite: https://github.com/askalione/bootstrap-table-filter
- * @version: v1.0.0
+ * @version: v1.1.0
  */
 
 !function ($) {
@@ -124,6 +124,8 @@
         
         filterRow.insertAfter(getHeader(that).find('tr'));
         
+		console.log('that.options', that.options);
+		
         if (getHeader(that).find('.filter-select').length > 0) {
             getHeader(that).find('.filter-select').each(function () {
                 var searchable = $(this).data('searchable');
@@ -150,7 +152,10 @@
                     case 'var':
                         var variableName = $(this).data('var');
                         var variableValues = window[variableName];
-                        addSelectOption($(this), null);
+                        addSelectOption($(this), {
+							id: '',
+							text: that.options.formatFilterSelectLabel()
+						});
                         for (var key in variableValues) {
                             addSelectOption($(this), variableValues[key]);
                         }
@@ -310,7 +315,10 @@
         },
         formatResetFilter: function () {
             return 'Reset filter';
-        }
+        },
+		formatFilterSelectLabel: function() {
+			return 'All';
+		}
     });
     $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales);  
 
